@@ -88,4 +88,58 @@ trait ConditionallyLoadsAttributes
 
         return $numericKeys ? array_values($data) : $data;
     }
+
+    /**
+     * Retrieve a value based on a given condition.
+     *
+     * @param  bool  $condition
+     * @param  mixed  $value
+     * @param  mixed  $default
+     * @return \Elegant\Http\Resources\MissingValue|mixed
+     */
+    protected function when($condition, $value, $default = null)
+    {
+        if ($condition) {
+            return value($value);
+        }
+
+        return func_num_args() === 3 ? value($default) : new MissingValue;
+    }
+
+    /**
+     * Merge a value into the array.
+     *
+     * @param  mixed  $value
+     * @return \Elegant\Http\Resources\MergeValue|mixed
+     */
+    protected function merge($value)
+    {
+        return $this->mergeWhen(true, $value);
+    }
+
+    /**
+     * Merge a value based on a given condition.
+     *
+     * @param  bool  $condition
+     * @param  mixed  $value
+     * @return \Elegant\Http\Resources\MergeValue|mixed
+     */
+    protected function mergeWhen($condition, $value)
+    {
+        return $condition ? new MergeValue(value($value)) : new MissingValue;
+    }
+
+    /**
+     * Retrieve a model attribute if it is not null.
+     *
+     * @param  mixed  $value
+     * @param  mixed  $default
+     * @return \Elegant\Http\Resources\MissingValue|mixed
+     */
+    protected function whenNotNull($value, $default = null)
+    {
+        $arguments = func_num_args() == 1 ? [$value] : [$value, $default];
+
+        return $this->when(! is_null($value), ...$arguments);
+    }
 }
