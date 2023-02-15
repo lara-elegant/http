@@ -19,6 +19,13 @@ class JsonResource implements ArrayAccess, JsonSerializable
     public $resource;
 
     /**
+     * The additional data that should be added to the top-level resource array.
+     *
+     * @var array
+     */
+    public $with = [];
+
+    /**
      * The additional meta data that should be added to the resource response.
      *
      * Added during response construction by the developer.
@@ -26,6 +33,13 @@ class JsonResource implements ArrayAccess, JsonSerializable
      * @var array
      */
     public $additional = [];
+
+    /**
+     * The "data" wrapper that should be applied.
+     *
+     * @var string|null
+     */
+    public static $wrap = 'data';
 
     /**
      * Create a new resource instance.
@@ -100,6 +114,16 @@ class JsonResource implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Get any additional data that should be returned with the resource array.
+     *
+     * @return array
+     */
+    public function with(): array
+    {
+        return $this->with;
+    }
+
+    /**
      * Add additional meta data to the resource response.
      *
      * @param  array  $data
@@ -110,6 +134,47 @@ class JsonResource implements ArrayAccess, JsonSerializable
         $this->additional = $data;
 
         return $this;
+    }
+
+    /**
+     * Set the string that should wrap the outer-most resource array.
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public static function wrap($value)
+    {
+        static::$wrap = $value;
+    }
+
+    /**
+     * Disable wrapping of the outer-most resource array.
+     *
+     * @return void
+     */
+    public static function withoutWrapping()
+    {
+        static::$wrap = null;
+    }
+
+    /**
+     * Transform the resource into an HTTP response.
+     *
+     * @return array
+     */
+    public function response(): array
+    {
+        return $this->toResponse();
+    }
+
+    /**
+     * Create an HTTP response that represents the object.
+     *
+     * @return array
+     */
+    public function toResponse(): array
+    {
+        return (new ResourceResponse($this))->toResponse();
     }
 
     /**
